@@ -1,0 +1,113 @@
+﻿@model Cart.Models.ProductVM
+@{
+    ViewBag.Title = "Index";
+}
+
+<br />
+
+<h2>Sepet</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ürün Adı</th>
+            <th>Fiyat</th>
+            <th>Stok Miktarı</th>
+            <th>Adet</th>
+            <th>Toplam Fiyat</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="col-lg-6 col-lg-offset-6">
+            <label>Ödemeniz gereken Toplam Tutar: <span id="totalAmount"></span></label>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            setTimeout(function myfunction() {
+                $.Cart.List();
+            },250)
+
+
+            $.Cart = {
+               List: function () {
+                    $.getJSON("@Url.Action("List","Cart")", function (data) {
+                        $("table tbody tr").remove();
+                        var count = Object.keys(data).length;
+                        var totalAmount = 0;
+                        if (count > 0) {
+                            $.each(data, function (key, item) {
+                                $("table tbody").append(
+                                    '<tr>' +
+                                    '<td>' + item.ProductName+ '</td>' +
+                                    '<td>' + item.UnitPrice + '</td>' +
+                                    '<td>' + item.UnitsInStock + '</td>' +
+                                    '<td>' + item.Quantity + '</td>' +
+                                    '<td>' + (item.Quantity * item.UnitPrice).toFixed(2) + '</td>' +
+                                    '<td>' +
+                                    '<img onclick="$.Cart.Increase(' + item.Id + ')" width="40" height="40" src="/Images/Add1.png" data-toggle="tooltip" data-placement="right" title="Arttır" />' +
+                                    '<img onclick="$.Cart.Decrease(' + item.Id + ')" width="40" height="40" src="/Images/Remove1.png" data-toggle="tooltip" data-placement="right" title="Azalt" />' +
+                                    '<img onclick="$.Cart.Remove(' + item.Id + ')" width="40" height="40" src="/Images/Remove.png" data-toggle="tooltip" data-placement="right" title="Sil" />' +
+                                    '</td>' +
+                                    '</tr>');
+                                totalAmount += item.UnitPrice * item.Quantity;
+                            });
+                        }
+                        else {
+                            $("table tbody").append(
+                                '<tr>' +
+                                    '<td colspan="6" style="text-align:center;">' +
+                                        '<img src="/images/emptycart.jpg" />' +
+                                    '</td>' +
+                                '</tr>'
+                            );
+                        }
+                        $("#totalAmount").html(totalAmount.toFixed(2));
+                        $('[data-toggle="tooltip"]').tooltip();
+                    });
+                },
+                Increase: function (id) {
+                    $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("IncreaseItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                },
+                Decrease: function (id) {
+                     $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("DecreaseItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                },
+                Remove: function (id) {
+                     $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("RemoveItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                }
+            };
+        });
+    </script>
+}

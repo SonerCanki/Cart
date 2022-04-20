@@ -1,0 +1,107 @@
+﻿@model Cart.Models.ProductVM
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UnitPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @await Component.InvokeAsync("CartList")
+    </tbody>
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            setTimeout(function myfunction() {
+                $.Cart.List();
+            },250)
+
+
+            $.Cart = {
+               List: function () {
+                    $.getJSON("@Url.Action("List","Cart")", function (data) {
+                        $("table tbody tr").remove();
+                        var count = Object.keys(data).length;
+                        var totalAmount = 0;
+                        if (count > 0) {
+                            $.each(data, function (key, item) {
+                                $("table tbody").append(
+                                    '<tr>' +
+                                    '<td>' + item.ProductName+ '</td>' +
+                                    '<td>' + item.UnitPrice + '</td>' +
+                                    '<td>' + item.UnitsInStock + '</td>' +
+                                    '<td>' + item.Quantity + '</td>' +
+                                    '<td>' + (item.Quantity * item.UnitPrice).toFixed(2) + '</td>' +
+                                    '<td>' +
+                                    '<img onclick="$.Cart.Increase(' + item.Id + ')" width="40" height="40" src="/Images/Add1.png" data-toggle="tooltip" data-placement="right" title="Arttır" />' +
+                                    '<img onclick="$.Cart.Decrease(' + item.Id + ')" width="40" height="40" src="/Images/Remove1.png" data-toggle="tooltip" data-placement="right" title="Azalt" />' +
+                                    '<img onclick="$.Cart.Remove(' + item.Id + ')" width="40" height="40" src="/Images/Remove.png" data-toggle="tooltip" data-placement="right" title="Sil" />' +
+                                    '</td>' +
+                                    '</tr>');
+                                totalAmount += item.UnitPrice * item.Quantity;
+                            });
+                        }
+                        else {
+                            $("table tbody").append(
+                                '<tr>' +
+                                    '<td colspan="6" style="text-align:center;">' +
+                                        '<img src="/images/emptycart.jpg" />' +
+                                    '</td>' +
+                                '</tr>'
+                            );
+                        }
+                        $("#totalAmount").html(totalAmount.toFixed(2));
+                        $('[data-toggle="tooltip"]').tooltip();
+                    });
+                },
+                Increase: function (id) {
+                    $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("IncreaseItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                },
+                Decrease: function (id) {
+                     $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("DecreaseItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                },
+                Remove: function (id) {
+                     $.ajax({
+                        type: "GET",
+                        dataType: "JSON",
+                        url: "@Url.Action("RemoveItem", "Cart")/" + id,
+                        success: function (result) {
+                            $.Cart.List();
+                        }
+                    });
+                }
+            };
+        });
+    </script>
+}

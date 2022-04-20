@@ -1,0 +1,102 @@
+﻿@model IEnumerable<Cart.Data.Entities.Product>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UnitPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UnitsInStock)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Category)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitsInStock)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.CategoryName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+
+            <td>
+                <a href="javascript:void(0);" class="add-to-cart">
+                    <img class="btnCart" val="@item.Id" width="40" height="40" src="~/Images/Shopping.png" data-toggle="tooltip" data-placement="right" title="Sepete Ekle" />
+                </a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts{
+    <script src="~/Scripts/Cart.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $(document).ready(function () {
+            $(".add-to-cart").on("click", function () {
+                $('html,body').animate({
+                    'scrollTop': $('.cart_anchor').position.top
+                });
+                var itemImg = $(this).parent().find('img').eq(0);
+                flyToElement($(itemImg), $('.cart_anchor'));
+            });
+
+            $(".btnCart").click(function () {
+                var id = $(this).attr("val");
+
+                $.ajax({
+                    type: "GET",
+                    dataType: "JSON",
+                    url: "@Url.Action("Add","Cart")/" + id,
+                    success: function (result) {
+                        console.log(result);
+                    },
+                    error: function (result) {
+                        console.log(result);
+                    }
+                });
+
+            });
+        });
+    </script>
+}
